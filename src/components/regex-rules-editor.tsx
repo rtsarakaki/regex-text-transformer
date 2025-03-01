@@ -112,7 +112,7 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
                 title="Regras JSON"
                 acceptTypes=".json"
             />
-            <div className="flex-1 overflow-hidden border border-slate-700 rounded-b">
+            <div className="flex-1 overflow-auto border border-slate-700 rounded-b">
                 <CodeMirror
                     value={rules}
                     height="100%"

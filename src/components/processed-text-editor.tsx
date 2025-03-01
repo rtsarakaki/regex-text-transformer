@@ -38,7 +38,7 @@ export const ProcessedTextEditor: React.FC<ProcessedTextEditorProps> = ({
                 title="Texto Processado"
                 acceptTypes="*/*"
             />
-            <div className="flex-1 overflow-hidden border border-slate-700 rounded-b">
+            <div className="flex-1 overflow-auto border border-slate-700 rounded-b">
                 <CodeMirror
                     value={processedText}
                     height="100%"

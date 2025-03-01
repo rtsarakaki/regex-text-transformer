@@ -31,7 +31,7 @@ export default function Home() {
           gutterAlign="center"
           direction="horizontal"
         >
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full overflow-auto">
             <RegexRulesEditor
               originalText={originalText}
               onTextProcessed={(text: string) => { setProcessedText(text) }}
@@ -40,7 +40,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full overflow-auto">
             <ProcessedTextEditor textLoaded={_handleTextLoaded} processedText={processedText}></ProcessedTextEditor>
           </div>
         </Split>
