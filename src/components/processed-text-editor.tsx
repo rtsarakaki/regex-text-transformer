@@ -43,7 +43,7 @@ export const ProcessedTextEditor: React.FC<ProcessedTextEditorProps> = ({
                     value={processedText}
                     height="100%"
                     theme={vscodeDark}
-                    editable={true}
+                    editable={false}
                     basicSetup={{
                         lineNumbers: true,
                         foldGutter: true

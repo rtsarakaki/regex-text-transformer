@@ -36,7 +36,9 @@ function _buildErrorMessage(propertyName: string, index: number | null, context:
     return message;
 }
 
-export function validateRulesConfig(rulesConfig: RulesConfig): RulesConfig {
+export function validateRulesConfig(rules: string): RulesConfig {
+    const rulesConfig = JSON.parse(rules)
+
     _validateProperty(
         rulesConfig
         , prop => typeof prop === 'object' && prop !== null

@@ -6,6 +6,7 @@ import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { json } from '@codemirror/lang-json'
 import { Toolbar } from '@/components/toolbar'
 import { applyRegexRules, saveTextToLocalFile } from '@/utils/text-processor'
+import { validateRulesConfig } from '@/entities/rules-config'
 
 // Importar CodeMirror dinamicamente para evitar erros de SSR
 const CodeMirror = dynamic(
@@ -30,8 +31,8 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
 
     const defaultRules = `{
     "variables": {
-        "var1": "@@",
-        "var2": "value2"
+        "var1": "<h3>1</h3>",
+        "var2": "<h1>1</h1>"
     },
     "groups": [
         {
@@ -40,9 +41,23 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
                 {
                     "description": "Descreva o objetivo da ação",
                     "action": "replace",
-                    "regex": "##",
+                    "regex": "###\\\\s*(.*)",
                     "value": "<VAR=var1>",
                     "active": true
+                },
+                {
+                  "description": "Substituir ## por <h2>conteudo</h2>",
+                  "action": "replace",
+                  "regex": "##\\\\s*(.*)",
+                  "value": "<h2>1</h2>",
+                  "active": true
+                },
+                {
+                  "description": "A ordem que as ações são aplicadas altera o resultado",
+                  "action": "replace",
+                  "regex": "#\\\\s*(.*)",
+                  "value": "<VAR=var2>",
+                  "active": true
                 }
             ]
         }
@@ -78,8 +93,7 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
             reader.onload = (e) => {
                 const content = e.target?.result as string
                 try {
-                    // Verificar se é um JSON válido
-                    JSON.parse(content)
+                    validateRulesConfig(content)
                     setRules(content)
                     onCleanError()
                 } catch (error) {

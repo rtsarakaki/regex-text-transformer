@@ -7,7 +7,7 @@ export function applyRegexRules(text: string, regexRules: string): string {
             return text;
         }
 
-        const rules: RulesConfig = validateRulesConfig(JSON.parse(regexRules));
+        const rules: RulesConfig = validateRulesConfig(regexRules);
         const variables = rules.variables || {};
 
         return rules.groups.reduce((result, group) => {
@@ -44,10 +44,12 @@ function _extractMatchingText(text: string, regex: RegExp, value: string, variab
 }
 
 function _replaceMatchingText(text: string, regex: RegExp, value: string, variables: Record<string, string>): string {
-    const regexWithVariables = _replaceVariables(value, variables);
-    const regexRemovedEscapes = _processEscapes(regexWithVariables)
-    const result = text.replace(regex, regexRemovedEscapes);
-    return result;
+    const replacedValue = _replaceVariables(value, variables);
+    return text.replace(regex, (match, ...groups) => {
+        return groups.slice(0, -2).reduce((result, group, index) => {
+            return result.replace(new RegExp(`\\$\\{${index + 1}\\}`, 'g'), group);
+        }, _processEscapes(replacedValue));
+    });
 }
 
 function _replaceVariables(value: string, variables: Record<string, string>): string {
