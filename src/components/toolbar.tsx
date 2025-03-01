@@ -4,11 +4,12 @@ import React, { useRef } from 'react';
 interface ToolbarProps {
     onSave: () => void;
     onLoad: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onCopy: () => void;
     title: string;
     acceptTypes: string;
 }
 
-export const Toolbar: React.FC<ToolbarProps> = ({ onSave, onLoad, title, acceptTypes }) => {
+export const Toolbar: React.FC<ToolbarProps> = ({ onSave, onLoad, onCopy, title, acceptTypes }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleLoadClick = () => {
@@ -36,6 +37,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onSave, onLoad, title, acceptT
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                     Carregar
+                </button>
+                <button
+                    onClick={onCopy}
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm transition-colors duration-200 flex items-center"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h8m-4-4v8m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Copiar
                 </button>
                 <input
                     type="file"

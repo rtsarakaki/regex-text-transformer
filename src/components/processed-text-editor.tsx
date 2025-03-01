@@ -21,6 +21,14 @@ export const ProcessedTextEditor: React.FC<ProcessedTextEditorProps> = ({
     processedText
 }) => {
 
+    const handleCopy = () => {
+        navigator.clipboard.writeText(processedText).then(() => {
+            console.log('Texto copiado para a área de transferência');
+        }).catch(err => {
+            console.error('Erro ao copiar texto: ', err);
+        });
+    };
+
     const _handleLoadText = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const content = await loadTextFromLocalFile(event)
         originalTextLoaded(content)
@@ -35,6 +43,7 @@ export const ProcessedTextEditor: React.FC<ProcessedTextEditorProps> = ({
             <Toolbar
                 onSave={_handleSaveProcessedText}
                 onLoad={_handleLoadText}
+                onCopy={handleCopy}
                 title="Texto Processado"
                 acceptTypes="*/*"
             />

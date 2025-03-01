@@ -1,6 +1,5 @@
 import { Action, RulesConfig, validateRulesConfig } from "@/entities/rules-config";
 
-
 export function applyRegexRules(text: string, regexRules: string): string {
     try {
         if (!text || !regexRules) {
@@ -14,6 +13,10 @@ export function applyRegexRules(text: string, regexRules: string): string {
             const activeActions = group.actions.filter(action => action.active);
             return activeActions.reduce((innerResult, action) => {
                 const regexWithVariables = _replaceVariables(action.regex, variables);
+                if (action.action === 'removeQuotes') {
+                    const regex = new RegExp(regexWithVariables, 'g');
+                    return _removeQuotes(innerResult, regex);
+                }
                 const regex = new RegExp(regexWithVariables, 'g');
                 return _applyAction(innerResult, regex, action, variables);
             }, result);
@@ -35,10 +38,17 @@ function _applyAction(text: string, regex: RegExp, action: Action, variables: Re
     }
 }
 
+
+function _removeQuotes(text: string, regex: RegExp): string {
+    return text.replace(regex, (match) => {
+        return match.replace(/"/g, '');
+    });
+}
+
 function _extractMatchingText(text: string, regex: RegExp, value: string, variables: Record<string, string>): string {
     const matches = text.match(regex);
     const regexWithVariables = _replaceVariables(value, variables);
-    const regexRemovedEscapes = _processEscapes(regexWithVariables)
+    const regexRemovedEscapes = _processEscapes(regexWithVariables);
     const result = matches ? matches.join(regexRemovedEscapes) : '';
     return result;
 }
@@ -69,32 +79,32 @@ function _processEscapes(value: string): string {
 }
 
 export const saveTextToLocalFile = (text: string, name: string, type: string) => {
-    const blob = new Blob([text], { type: type })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = name
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    const blob = new Blob([text], { type: type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 export const loadTextFromLocalFile = (event: React.ChangeEvent<HTMLInputElement>): Promise<string> => {
     return new Promise((resolve, reject) => {
-        const file = event.target.files?.[0]
+        const file = event.target.files?.[0];
         if (file) {
-            const reader = new FileReader()
+            const reader = new FileReader();
             reader.onload = (e) => {
-                const content = e.target?.result as string
-                resolve(content)
-            }
+                const content = e.target?.result as string;
+                resolve(content);
+            };
             reader.onerror = () => {
-                reject(new Error('Erro ao ler o arquivo'))
-            }
-            reader.readAsText(file)
+                reject(new Error('Erro ao ler o arquivo'));
+            };
+            reader.readAsText(file);
         } else {
-            reject(new Error('Nenhum arquivo selecionado'))
+            reject(new Error('Nenhum arquivo selecionado'));
         }
-    })
+    });
 }
