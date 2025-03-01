@@ -4,6 +4,7 @@ import { json } from '@codemirror/lang-json'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { Toolbar } from '@/components/toolbar'
 import { loadTextFromLocalFile, saveTextToLocalFile } from '@/utils/text-processor'
+import { validateRulesConfig } from '@/entities/rules-config'
 
 // Importar CodeMirror dinamicamente para evitar erros de SSR
 const CodeMirror = dynamic(
@@ -12,15 +13,25 @@ const CodeMirror = dynamic(
 )
 
 const defaultRules = `{
-  "actions": [
-    {
-      "description": "Limpar tags XML e deixar apenas os dados.",
-      "action": "replace",
-      "regex": "",
-      "value": "",
-      "active": true
-    }
-  ]
+  "groups": [
+  {
+    "title": "Descreva o grupo de regras",
+    "actions": [
+        {
+        "description": "Descreva qual será a transformação",
+        "action": "match",
+        "regex": "expressão regular",
+        "value": "valor a substituir o que for encontrado pela expressão regular",
+        "active": true
+        },
+        {
+        "description": "Descreva qual será a transformação",
+        "action": "replace",
+        "regex": "expressão regular",
+        "value": "valor a substituir o que for encontrado pela expressão regular",
+        "active": true
+        }
+    ]
 }`
 
 const RulesEditor: React.FC = () => {
@@ -38,7 +49,7 @@ const RulesEditor: React.FC = () => {
         const content = await loadTextFromLocalFile(event)
         try {
             // Verificar se é um JSON válido
-            JSON.parse(content)
+            validateRulesConfig(JSON.parse(content))
             setRules(content)
         } catch (error) {
             console.error(`Arquivo JSON inválido: ${(error as Error).message}`)

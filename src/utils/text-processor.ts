@@ -1,14 +1,5 @@
-interface Action {
-    description: string;
-    action: 'match' | 'replace';
-    regex: string;
-    value: string;
-    active: boolean;
-}
+import { Action, RulesConfig, validateRulesConfig } from "@/entities/rules-config";
 
-interface RulesConfig {
-    actions: Action[];
-}
 
 export function applyRegexRules(text: string, regexRules: string): string {
     try {
@@ -16,12 +7,14 @@ export function applyRegexRules(text: string, regexRules: string): string {
             return text;
         }
 
-        const rules: RulesConfig = JSON.parse(regexRules);
-        const activeRules = rules.actions.filter(action => action.active);
+        const rules: RulesConfig = validateRulesConfig(JSON.parse(regexRules));
 
-        return activeRules.reduce((result, action) => {
-            const regex = new RegExp(action.regex, 'g');
-            return _applyAction(result, regex, action);
+        return rules.groups.reduce((result, group) => {
+            const activeActions = group.actions.filter(action => action.active);
+            return activeActions.reduce((innerResult, action) => {
+                const regex = new RegExp(action.regex, 'g');
+                return _applyAction(innerResult, regex, action);
+            }, result);
         }, text);
     } catch (error) {
         console.error('Erro ao processar texto:', error);
@@ -32,20 +25,20 @@ export function applyRegexRules(text: string, regexRules: string): string {
 function _applyAction(text: string, regex: RegExp, action: Action): string {
     switch (action.action) {
         case 'match':
-            return _getTextMatchingRegex(text, regex, action.value);
+            return _extractMatchingText(text, regex, action.value);
         case 'replace':
-            return _getTextWithReplacedRegex(text, regex, action.value);
+            return _replaceMatchingText(text, regex, action.value);
         default:
             return text;
     }
 }
 
-function _getTextMatchingRegex(text: string, regex: RegExp, value: string): string {
+function _extractMatchingText(text: string, regex: RegExp, value: string): string {
     const matches = text.match(regex);
     return matches ? matches.join(_processEscapes(value)) : '';
 }
 
-function _getTextWithReplacedRegex(text: string, regex: RegExp, value: string): string {
+function _replaceMatchingText(text: string, regex: RegExp, value: string): string {
     return text.replace(regex, _processEscapes(value));
 }
 
