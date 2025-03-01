@@ -41,21 +41,21 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
                 {
                     "description": "Descreva o objetivo da ação",
                     "action": "replace",
-                    "regex": "###\\\\s*(.*)",
+                    "regex": "###\\s*(.*)",
                     "value": "<VAR=var1>",
                     "active": true
                 },
                 {
                   "description": "Substituir ## por <h2>conteudo</h2>",
                   "action": "replace",
-                  "regex": "##\\\\s*(.*)",
+                  "regex": "##\\s*(.*)",
                   "value": "<h2>{1}</h2>",
                   "active": true
                 },
                 {
                   "description": "A ordem que as ações são aplicadas altera o resultado",
                   "action": "replace",
-                  "regex": "#\\\\s*(.*)",
+                  "regex": "#\\s*(.*)",
                   "value": "<VAR=var2>",
                   "active": true
                 }

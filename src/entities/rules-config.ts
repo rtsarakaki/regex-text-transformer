@@ -1,6 +1,6 @@
 export interface Action {
     description: string;
-    action: 'match' | 'replace';
+    action: 'match' | 'replace' | 'removeQuotes';
     regex: string;
     value: string;
     active: boolean;
@@ -36,15 +36,16 @@ function _buildErrorMessage(propertyName: string, index: number | null, context:
     return message;
 }
 
-function _escapeBackslashesInRegex(rules: string): string {
+function _escapeSpecialCharactersInRegex(rules: string): string {
     return rules.replace(/"regex":\s*"([^"]*)"/g, (match, p1) => {
-        const escapedRegex = p1.replace(/\\/g, '\\\\');
+        const escapedRegex = p1.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        console.log(escapedRegex);
         return `"regex": "${escapedRegex}"`;
     });
 }
 
 export function validateRulesConfig(rules: string): RulesConfig {
-    const escapedRules = _escapeBackslashesInRegex(rules);
+    const escapedRules = _escapeSpecialCharactersInRegex(rules);
     const rulesConfig = JSON.parse(escapedRules);
 
     _validateProperty(
@@ -90,9 +91,9 @@ export function validateRulesConfig(rules: string): RulesConfig {
 
             _validateProperty(
                 action.action
-                , prop => prop === 'match' || prop === 'replace'
+                , prop => prop === 'match' || prop === 'replace' || prop === 'removeQuotes'
                 , `group[${groupIndex}].actions[${actionIndex}].action`
-                , _buildErrorMessage('action.action', actionIndex, 'grupo', group.title, '"match" ou "replace"'));
+                , _buildErrorMessage('action.action', actionIndex, 'grupo', group.title, '"match", "replace" ou "removeQuotes"'));
 
             _validateProperty(
                 action.regex
