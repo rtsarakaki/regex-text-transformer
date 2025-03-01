@@ -36,8 +36,16 @@ function _buildErrorMessage(propertyName: string, index: number | null, context:
     return message;
 }
 
+function _escapeBackslashesInRegex(rules: string): string {
+    return rules.replace(/"regex":\s*"([^"]*)"/g, (match, p1) => {
+        const escapedRegex = p1.replace(/\\/g, '\\\\');
+        return `"regex": "${escapedRegex}"`;
+    });
+}
+
 export function validateRulesConfig(rules: string): RulesConfig {
-    const rulesConfig = JSON.parse(rules)
+    const escapedRules = _escapeBackslashesInRegex(rules);
+    const rulesConfig = JSON.parse(escapedRules);
 
     _validateProperty(
         rulesConfig
