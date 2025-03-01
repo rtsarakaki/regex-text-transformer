@@ -12,6 +12,7 @@ export interface RuleGroup {
 }
 
 export interface RulesConfig {
+    variables?: Record<string, string>;
     groups: RuleGroup[];
 }
 
@@ -42,6 +43,15 @@ export function validateRulesConfig(rulesConfig: RulesConfig): RulesConfig {
         , 'rulesConfig'
         , 'O JSON de regras deve ser um objeto.');
 
+    if (rulesConfig.variables) {
+        _validateProperty(
+            rulesConfig.variables,
+            prop => typeof prop === 'object' && prop !== null,
+            'variables',
+            'A propriedade "variables" deve ser um objeto.'
+        );
+    }
+
     _validateProperty(
         rulesConfig.groups
         , Array.isArray
@@ -69,7 +79,8 @@ export function validateRulesConfig(rulesConfig: RulesConfig): RulesConfig {
                 , _buildErrorMessage('action.description', actionIndex, 'grupo', group.title, 'string'));
 
             _validateProperty(
-                action.action, prop => prop === 'match' || prop === 'replace'
+                action.action
+                , prop => prop === 'match' || prop === 'replace'
                 , `group[${groupIndex}].actions[${actionIndex}].action`
                 , _buildErrorMessage('action.action', actionIndex, 'grupo', group.title, '"match" ou "replace"'));
 

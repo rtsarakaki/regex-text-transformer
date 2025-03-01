@@ -29,13 +29,22 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
     const [rules, setRules] = useState<string>('')
 
     const defaultRules = `{
-    "actions": [
+    "variables": {
+        "var1": "@@",
+        "var2": "value2"
+    },
+    "groups": [
         {
-        "description": "Limpar tags XML e deixar apenas os dados.",
-        "action": "replace",
-        "regex": "",
-        "value": "",
-        "active": true
+            "title": "Agrupe as regras para facilitar o entendimento.",
+            "actions": [
+                {
+                    "description": "Descreva o objetivo da ação",
+                    "action": "replace",
+                    "regex": "##",
+                    "value": "<VAR=var1>",
+                    "active": true
+                }
+            ]
         }
     ]
 }`

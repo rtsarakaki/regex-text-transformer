@@ -8,12 +8,14 @@ export function applyRegexRules(text: string, regexRules: string): string {
         }
 
         const rules: RulesConfig = validateRulesConfig(JSON.parse(regexRules));
+        const variables = rules.variables || {};
 
         return rules.groups.reduce((result, group) => {
             const activeActions = group.actions.filter(action => action.active);
             return activeActions.reduce((innerResult, action) => {
-                const regex = new RegExp(action.regex, 'g');
-                return _applyAction(innerResult, regex, action);
+                const regexWithVariables = _replaceVariables(action.regex, variables);
+                const regex = new RegExp(regexWithVariables, 'g');
+                return _applyAction(innerResult, regex, action, variables);
             }, result);
         }, text);
     } catch (error) {
@@ -22,24 +24,37 @@ export function applyRegexRules(text: string, regexRules: string): string {
     }
 }
 
-function _applyAction(text: string, regex: RegExp, action: Action): string {
+function _applyAction(text: string, regex: RegExp, action: Action, variables: Record<string, string>): string {
     switch (action.action) {
         case 'match':
-            return _extractMatchingText(text, regex, action.value);
+            return _extractMatchingText(text, regex, action.value, variables);
         case 'replace':
-            return _replaceMatchingText(text, regex, action.value);
+            return _replaceMatchingText(text, regex, action.value, variables);
         default:
             return text;
     }
 }
 
-function _extractMatchingText(text: string, regex: RegExp, value: string): string {
+function _extractMatchingText(text: string, regex: RegExp, value: string, variables: Record<string, string>): string {
     const matches = text.match(regex);
-    return matches ? matches.join(_processEscapes(value)) : '';
+    const regexWithVariables = _replaceVariables(value, variables);
+    const regexRemovedEscapes = _processEscapes(regexWithVariables)
+    const result = matches ? matches.join(regexRemovedEscapes) : '';
+    return result;
 }
 
-function _replaceMatchingText(text: string, regex: RegExp, value: string): string {
-    return text.replace(regex, _processEscapes(value));
+function _replaceMatchingText(text: string, regex: RegExp, value: string, variables: Record<string, string>): string {
+    const regexWithVariables = _replaceVariables(value, variables);
+    const regexRemovedEscapes = _processEscapes(regexWithVariables)
+    const result = text.replace(regex, regexRemovedEscapes);
+    return result;
+}
+
+function _replaceVariables(value: string, variables: Record<string, string>): string {
+    return Object.keys(variables).reduce((result, key) => {
+        const variableRegex = new RegExp(`<VAR=${key}>`, 'g');
+        return result.replace(variableRegex, variables[key]);
+    }, value);
 }
 
 function _processEscapes(value: string): string {
