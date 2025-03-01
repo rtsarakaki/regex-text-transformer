@@ -81,6 +81,13 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
         setRules(defaultRules)
     }, [defaultRules])
 
+    const handleCopy = () => {
+        navigator.clipboard.writeText(rules).then(() => {
+            console.log('Texto copiado para a área de transferência');
+        }).catch(err => {
+            console.error('Erro ao copiar texto: ', err);
+        });
+    };
 
     const handleSaveRules = () => {
         saveTextToLocalFile(rules, 'regras.json', 'application/json')
@@ -109,6 +116,7 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
             <Toolbar
                 onSave={handleSaveRules}
                 onLoad={handleLoadRules}
+                onCopy={handleCopy}
                 title="Regras JSON"
                 acceptTypes=".json"
             />
