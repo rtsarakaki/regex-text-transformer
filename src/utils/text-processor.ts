@@ -46,9 +46,11 @@ function _extractMatchingText(text: string, regex: RegExp, value: string, variab
 function _replaceMatchingText(text: string, regex: RegExp, value: string, variables: Record<string, string>): string {
     const replacedValue = _replaceVariables(value, variables);
     return text.replace(regex, (match, ...groups) => {
-        return groups.slice(0, -2).reduce((result, group, index) => {
-            return result.replace(new RegExp(`\\$\\{${index + 1}\\}`, 'g'), group);
-        }, _processEscapes(replacedValue));
+        let result = _processEscapes(replacedValue);
+        groups.slice(0, -2).forEach((group, index) => {
+            result = result.replace(new RegExp(`\\{${index + 1}\\}`, 'g'), group);
+        });
+        return result;
     });
 }
 
