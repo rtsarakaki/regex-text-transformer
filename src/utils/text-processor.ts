@@ -1,4 +1,4 @@
-import { Action, RulesConfig, validateRulesConfig } from "@/entities/rules-config";
+import { Action, RulesConfig, validateRulesConfigJson, validateRulesConfigYaml } from "@/entities/rules-config";
 
 export function applyRegexRules(text: string, regexRules: string): string {
     try {
@@ -6,7 +6,7 @@ export function applyRegexRules(text: string, regexRules: string): string {
             return text;
         }
 
-        const rules: RulesConfig = validateRulesConfig(regexRules);
+        const rules: RulesConfig = detectAndValidateRulesConfig(regexRules);
         const variables = rules.variables || {};
 
         return rules.groups.reduce((result, group) => {
@@ -27,6 +27,18 @@ export function applyRegexRules(text: string, regexRules: string): string {
     }
 }
 
+function detectAndValidateRulesConfig(rules: string): RulesConfig {
+    try {
+        return validateRulesConfigJson(rules);
+    } catch {
+        try {
+            return validateRulesConfigYaml(rules);
+        } catch {
+            throw new Error('Formato de regras inválido. Deve ser JSON ou YAML.');
+        }
+    }
+}
+
 function _applyAction(text: string, regex: RegExp, action: Action, variables: Record<string, string>): string {
     switch (action.action) {
         case 'match':
@@ -37,7 +49,6 @@ function _applyAction(text: string, regex: RegExp, action: Action, variables: Re
             return text;
     }
 }
-
 
 function _removeQuotes(text: string, regex: RegExp): string {
     return text.replace(regex, (match) => {

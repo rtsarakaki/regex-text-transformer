@@ -4,11 +4,11 @@ import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { json } from '@codemirror/lang-json'
+import yaml from 'js-yaml'
 import { Toolbar } from '@/components/toolbar'
 import { applyRegexRules, saveTextToLocalFile } from '@/utils/text-processor'
-import { validateRulesConfig } from '@/entities/rules-config'
+import { defaultRules, escapeSpecialCharactersInRegex, RulesConfig, validateRulesConfigJson, validateRulesConfigYaml } from '@/entities/rules-config'
 
-// Importar CodeMirror dinamicamente para evitar erros de SSR
 const CodeMirror = dynamic(
     () => import('@uiw/react-codemirror').then((mod) => mod.default),
     { ssr: false }
@@ -27,42 +27,8 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
     onError,
     onCleanError
 }) => {
-    const [rules, setRules] = useState<string>('')
-
-    const defaultRules = `{
-    "variables": {
-        "var1": "<h3>{1}</h3>",
-        "var2": "<h1>{1}</h1>"
-    },
-    "groups": [
-        {
-            "title": "Agrupe as regras para facilitar o entendimento.",
-            "actions": [
-                {
-                    "description": "Descreva o objetivo da ação",
-                    "action": "replace",
-                    "regex": "###\\s*(.*)",
-                    "value": "<VAR=var1>",
-                    "active": true
-                },
-                {
-                  "description": "Substituir ## por <h2>conteudo</h2>",
-                  "action": "replace",
-                  "regex": "##\\s*(.*)",
-                  "value": "<h2>{1}</h2>",
-                  "active": true
-                },
-                {
-                  "description": "A ordem que as ações são aplicadas altera o resultado",
-                  "action": "replace",
-                  "regex": "#\\s*(.*)",
-                  "value": "<VAR=var2>",
-                  "active": true
-                }
-            ]
-        }
-    ]
-}`
+    const [rules, setRules] = useState<string>(defaultRules)
+    const [format, setFormat] = useState<'json' | 'yaml'>('json');
 
     useEffect(() => {
         try {
@@ -76,10 +42,6 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
             console.error(error)
         }
     }, [rules, originalText, onTextProcessed, onError, onCleanError])
-
-    useEffect(() => {
-        setRules(defaultRules)
-    }, [defaultRules])
 
     const handleCopy = () => {
         navigator.clipboard.writeText(rules).then(() => {
@@ -100,16 +62,60 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
             reader.onload = (e) => {
                 const content = e.target?.result as string
                 try {
-                    validateRulesConfig(content)
-                    setRules(content)
-                    onCleanError()
+                    const extension = file.name.split('.').pop()?.toLowerCase();
+                    if (extension === 'json') {
+                        validateRulesConfigJson(content);
+                        setFormat('json');
+                    } else if (extension === 'yaml' || extension === 'yml') {
+                        validateRulesConfigYaml(content);
+                        setFormat('yaml');
+                    } else {
+                        throw new Error('Formato de arquivo não suportado');
+                    }
+                    setRules(content);
+                    onCleanError();
                 } catch (error) {
-                    onError(`Arquivo JSON inválido: ${(error as Error).message}`)
+                    onError(`Arquivo inválido: ${(error as Error).message}`);
                 }
             }
             reader.readAsText(file)
         }
     }
+
+    const parseRules = (text: string, format: 'json' | 'yaml'): RulesConfig => {
+        if (format === 'json') {
+            const escapedRules = escapeSpecialCharactersInRegex(text);
+            return JSON.parse(escapedRules) as RulesConfig;
+        } else {
+            return yaml.load(text) as RulesConfig;
+        }
+    };
+
+    const validateRules = (parsedRules: RulesConfig) => {
+        return validateRulesConfigJson(JSON.stringify(parsedRules));
+    };
+
+    const handleValidate = () => {
+        try {
+            const parsedRules = parseRules(rules, format);
+            const rulesConfig = validateRules(parsedRules);
+            console.log('Regras validadas:', rulesConfig);
+        } catch (error) {
+            console.error('Erro ao validar regras:', error);
+        }
+    };
+
+    const handleFormatChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const newFormat = event.target.value as 'json' | 'yaml';
+        try {
+            const parsedRules = parseRules(rules, format);
+            const convertedRules = newFormat === 'json' ? JSON.stringify(parsedRules, null, 2) : yaml.dump(parsedRules);
+            setRules(convertedRules);
+            setFormat(newFormat);
+        } catch (error) {
+            onError(`Erro ao converter regras: ${(error as Error).message}`);
+        }
+    };
 
     return (
         <>
@@ -118,8 +124,18 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
                 onLoad={handleLoadRules}
                 onCopy={handleCopy}
                 title="Regras JSON"
-                acceptTypes=".json"
+                acceptTypes=".json,.yaml,.yml"
             />
+            <div className="flex items-center space-x-2">
+                <label htmlFor="format" className="text-white">Formato:</label>
+                <select id="format" value={format} onChange={handleFormatChange} className="bg-gray-700 text-white p-1 rounded">
+                    <option value="json">JSON</option>
+                    <option value="yaml">YAML</option>
+                </select>
+                <button onClick={handleValidate} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors duration-200">
+                    Validar
+                </button>
+            </div>
             <div className="flex-1 overflow-auto border border-slate-700 rounded-b">
                 <CodeMirror
                     value={rules}
