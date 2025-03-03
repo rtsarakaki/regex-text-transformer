@@ -9,12 +9,21 @@ interface ProcessTextResult {
 
 export function applyRegexRules(text: string, regexRules: string, mode: Mode): string {
     try {
-        if (!text || !regexRules) {
+        if (!regexRules) {
             return text;
         }
 
         const rules: RulesConfig = detectAndValidateRulesConfig(regexRules);
         const variables = rules.variables || {};
+
+        if (mode === 'generate_document') {
+            const document = _generateMarkdownDocument(rules);
+            return document;
+        }
+
+        if (!text) {
+            return text;
+        }
 
         const result = _processTextWithRules(text, rules, variables, mode);
 
@@ -62,6 +71,23 @@ export function _applyAction(text: string, regexWithVariables: string, action: A
         default:
             return text;
     }
+}
+
+function _generateMarkdownDocument(rules: RulesConfig): string {
+    let markdown = "# Generated Document\n\n";
+
+    rules.groups.forEach(group => {
+        markdown += `## ${group.title}\n\n`;
+        group.actions.forEach(action => {
+            markdown += `### ${action.description}\n`;
+            markdown += `- **Action**: ${action.action}\n`;
+            markdown += `- **Regex**: \`${action.regex}\`\n`;
+            markdown += `- **Value**: ${action.value}\n`;
+            markdown += `- **Active**: ${action.active}\n\n`;
+        });
+    });
+
+    return markdown;
 }
 
 export function _removeQuotes(text: string, regex: RegExp): string {

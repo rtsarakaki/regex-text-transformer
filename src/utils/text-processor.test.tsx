@@ -55,6 +55,17 @@ describe('text-processor', () => {
             const result = applyRegexRules(text, rulesJson, 'validate');
             expect(result).toBe('Rule "Replace world with universe" needs to be applied.');
         });
+
+        test('generates a markdown document', () => {
+            const result = applyRegexRules('', rulesJson, 'generate_document');
+            expect(result).toContain('# Generated Document');
+            expect(result).toContain('## Group 1');
+            expect(result).toContain('### Replace world with universe');
+            expect(result).toContain('- **Action**: replace');
+            expect(result).toContain('- **Regex**: `world`');
+            expect(result).toContain('- **Value**: universe');
+            expect(result).toContain('- **Active**: true');
+        });
     });
 
     describe('_applyAction', () => {

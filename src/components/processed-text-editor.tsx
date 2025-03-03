@@ -63,7 +63,7 @@ export const ProcessedTextEditor: React.FC<ProcessedTextEditorProps> = ({
                 <select id="format" value={mode} onChange={_handleModeChange} className="bg-gray-700 text-white p-1 rounded">
                     <option value="process">Transform</option>
                     <option value="validate">Validate</option>
-                    <option value="create_document">Document</option>
+                    <option value="generate_document">Document</option>
                 </select>
             </div>
             <div className="flex-1 overflow-auto border border-slate-700 rounded-b">

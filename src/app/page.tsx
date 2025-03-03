@@ -6,6 +6,7 @@ import Split from 'react-split'
 import { ProcessedTextEditor } from '@/components/processed-text-editor'
 import { RegexRulesEditor } from '@/components/regex-rules-editor'
 import { ErrorMessage } from '@/components/error-message'
+import { Mode } from '@/utils/text-processor'
 
 export default function Home() {
   const [originalText, setOriginalText] = useState<string>('')
@@ -56,10 +57,10 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col h-full overflow-auto">
-            <ProcessedTextEditor 
-              textLoaded={_handleTextLoaded} 
+            <ProcessedTextEditor
+              textLoaded={_handleTextLoaded}
               processedText={processedText}
-              onChangeMode={(mode: 'process' | 'validate' | 'generate_document') => setMode(mode)}
+              onChangeMode={(mode: Mode) => setMode(mode)}
             />
           </div>
         </Split>
