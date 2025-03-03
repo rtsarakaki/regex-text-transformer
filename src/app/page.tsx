@@ -33,7 +33,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-white">
       <header className="bg-slate-800 p-4 shadow-md">
-        <h1 className="text-2xl font-bold text-cyan-400">Processador de Texto com Regras Regex</h1>
+        <h1 className="text-2xl font-bold text-cyan-400">Text Processor with Regex Rules</h1>
       </header>
 
       <main className="flex-1 overflow-hidden">
@@ -71,7 +71,7 @@ export default function Home() {
       )}
 
       <footer className="bg-slate-800 text-center p-2 text-sm text-slate-400">
-        Processador de Texto com Regras Regex © 2025
+        Text Processor with Regex Rules © 2025 by rtsarakaki
       </footer>
     </div>
   )

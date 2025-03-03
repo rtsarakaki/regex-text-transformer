@@ -28,9 +28,9 @@ describe('Toolbar', () => {
     });
 
     test('renders the Save, Load, and Copy buttons', () => {
-        const saveButton = screen.getByText(/Salvar/i);
-        const loadButton = screen.getByText(/Carregar/i);
-        const copyButton = screen.getByText(/Copiar/i);
+        const saveButton = screen.getByText(/Download/i);
+        const loadButton = screen.getByText(/Load/i);
+        const copyButton = screen.getByText(/Copy/i);
 
         expect(saveButton).toBeInTheDocument();
         expect(loadButton).toBeInTheDocument();
@@ -38,13 +38,13 @@ describe('Toolbar', () => {
     });
 
     test('calls the onSave function when the Save button is clicked', () => {
-        const saveButton = screen.getByText(/Salvar/i);
+        const saveButton = screen.getByText(/Download/i);
         fireEvent.click(saveButton);
         expect(handleSave).toHaveBeenCalled();
     });
 
     test('calls the onLoad function when a file is selected', () => {
-        const loadButton = screen.getByText(/Carregar/i);
+        const loadButton = screen.getByText(/Load/i);
         fireEvent.click(loadButton);
 
         const fileInput = screen.getByTestId('file-input');
@@ -55,7 +55,7 @@ describe('Toolbar', () => {
     });
 
     test('calls the onCopy function when the Copy button is clicked', () => {
-        const copyButton = screen.getByText(/Copiar/i);
+        const copyButton = screen.getByText(/Copy/i);
         fireEvent.click(copyButton);
         expect(handleCopy).toHaveBeenCalled();
     });
