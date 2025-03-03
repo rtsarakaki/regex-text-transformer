@@ -55,7 +55,7 @@ export const ProcessedTextEditor: React.FC<ProcessedTextEditorProps> = ({
                 onSave={_handleSaveProcessedText}
                 onLoad={_handleLoadText}
                 onCopy={handleCopy}
-                title="Texto Processado"
+                title="Output"
                 acceptTypes="*/*"
             />
             <div className="flex items-center space-x-2">
