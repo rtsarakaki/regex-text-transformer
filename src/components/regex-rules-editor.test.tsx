@@ -1,12 +1,14 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, fireEvent, screen, waitFor } from '@testing-library/react'
 import { RegexRulesEditor } from './regex-rules-editor'
+import { defaultRules } from '@/entities/rules-config'
 
 describe('RegexRulesEditor', () => {
     const originalText = 'Hello world'
     const onTextProcessed = jest.fn()
     const onError = jest.fn()
-    const onCleanError = jest.fn()
+    const onSuccess = jest.fn()
+    const onCleanAlert = jest.fn()
 
     beforeEach(() => {
         jest.clearAllMocks()
@@ -18,7 +20,8 @@ describe('RegexRulesEditor', () => {
                 originalText={originalText}
                 onTextProcessed={onTextProcessed}
                 onError={onError}
-                onCleanError={onCleanError}
+                onSuccess={onSuccess}
+                onCleanAlert={onCleanAlert}
             />
         )
 

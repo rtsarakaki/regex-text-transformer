@@ -5,15 +5,27 @@ import Split from 'react-split'
 
 import { ProcessedTextEditor } from '@/components/processed-text-editor'
 import { RegexRulesEditor } from '@/components/regex-rules-editor'
+import { ErrorMessage } from '@/components/error-message'
 
 export default function Home() {
   const [originalText, setOriginalText] = useState<string>('')
   const [processedText, setProcessedText] = useState<string>('')
-  const [error, setError] = useState<string | null>(null)
+  const [alert, setAlert] = useState<string | null>(null)
+  const [alertType, setAlertType] = useState<'error' | 'success'>('error')
 
   const _handleTextLoaded = (text: string) => {
     setOriginalText(text)
     setProcessedText(text)
+  }
+
+  const _handleError = (errorMessage: string) => {
+    setAlert(errorMessage)
+    setAlertType('error')
+  }
+
+  const _handleSuccess = (successMessage: string) => {
+    setAlert(successMessage)
+    setAlertType('success')
   }
 
   return (
@@ -35,8 +47,9 @@ export default function Home() {
             <RegexRulesEditor
               originalText={originalText}
               onTextProcessed={(text: string) => { setProcessedText(text) }}
-              onError={(errorMessage: string) => { setError(errorMessage) }}
-              onCleanError={() => { setError(null) }}
+              onError={_handleError}
+              onSuccess={_handleSuccess}
+              onCleanAlert={() => { setAlert(null) }}
             />
           </div>
 
@@ -46,10 +59,8 @@ export default function Home() {
         </Split>
       </main>
 
-      {error && (
-        <div className="bg-red-600 p-2 text-white">
-          {error}
-        </div>
+      {alert && (
+        <ErrorMessage message={alert} type={alertType} onClose={() => setAlert(null)} />
       )}
 
       <footer className="bg-slate-800 text-center p-2 text-sm text-slate-400">

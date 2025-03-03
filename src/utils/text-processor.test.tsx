@@ -1,4 +1,11 @@
-import { applyRegexRules, _applyAction, _removeQuotes, _extractMatchingText, _replaceMatchingText, _replaceVariables, _processEscapes } from './text-processor';
+import {
+    applyRegexRules
+    , _applyAction, _removeQuotes
+    , _extractMatchingText
+    , _replaceMatchingText
+    , _replaceVariables
+    , _processEscapes
+} from './text-processor';
 import { Action, RulesConfig } from '@/entities/rules-config';
 
 describe('text-processor', () => {
@@ -352,58 +359,4 @@ describe('text-processor', () => {
             });
         });
     });
-
-    // describe('saveTextToLocalFile', () => {
-    //     test('creates a downloadable file', () => {
-    //         const text = 'Hello, world!';
-    //         const name = 'hello.txt';
-    //         const type = 'text/plain';
-
-    //         // Mock the createElement and appendChild methods
-    //         const createElementSpy = jest.spyOn(document, 'createElement');
-    //         const appendChildSpy = jest.spyOn(document.body, 'appendChild');
-    //         const removeChildSpy = jest.spyOn(document.body, 'removeChild');
-
-    //         // Mock URL.createObjectURL
-    //         const createObjectURLSpy = jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:http://localhost/12345');
-
-    //         saveTextToLocalFile(text, name, type);
-
-    //         expect(createElementSpy).toHaveBeenCalledWith('a');
-    //         expect(appendChildSpy).toHaveBeenCalled();
-    //         expect(removeChildSpy).toHaveBeenCalled();
-    //         expect(createObjectURLSpy).toHaveBeenCalled();
-
-    //         // Clean up mocks
-    //         createElementSpy.mockRestore();
-    //         appendChildSpy.mockRestore();
-    //         removeChildSpy.mockRestore();
-    //         createObjectURLSpy.mockRestore();
-    //     });
-    // });
-
-    // describe('loadTextFromLocalFile', () => {
-    //     test('loads text from a selected file', async () => {
-    //         const fileContent = 'Hello, world!';
-    //         const file = new File([fileContent], 'hello.txt', { type: 'text/plain' });
-    //         const event = {
-    //             target: {
-    //                 files: [file],
-    //             },
-    //         } as React.ChangeEvent<HTMLInputElement>;
-
-    //         const result = await loadTextFromLocalFile(event);
-    //         expect(result).toBe(fileContent);
-    //     });
-
-    //     test('throws an error if no file is selected', async () => {
-    //         const event = {
-    //             target: {
-    //                 files: [],
-    //             },
-    //         } as React.ChangeEvent<HTMLInputElement>;
-
-    //         await expect(loadTextFromLocalFile(event)).rejects.toThrow('Nenhum arquivo selecionado');
-    //     });
-    // });
 });

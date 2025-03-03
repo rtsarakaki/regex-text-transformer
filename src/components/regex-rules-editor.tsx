@@ -18,14 +18,16 @@ interface RegexRulesEditorProps {
     originalText: string
     onTextProcessed: (text: string) => void
     onError: (text: string) => void
-    onCleanError: () => void
+    onSuccess: (text: string) => void
+    onCleanAlert: () => void
 }
 
 export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
     originalText,
     onTextProcessed,
     onError,
-    onCleanError
+    onSuccess,
+    onCleanAlert: onCleanError
 }) => {
     const [rules, setRules] = useState<string>(defaultRules)
     const [format, setFormat] = useState<'json' | 'yaml'>('json');
@@ -39,20 +41,19 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
             }
         } catch (error) {
             onError(`Error processing text: ${(error as Error).message}`)
-            console.error(error)
         }
     }, [rules, originalText, onTextProcessed, onError, onCleanError])
 
     const handleCopy = () => {
         navigator.clipboard.writeText(rules).then(() => {
-            console.log('Text copied to clipboard');
+            onSuccess('Rules copied to clipboard');
         }).catch(err => {
-            console.error('Error copying text: ', err);
+            onError(`Error copying text to clipboard: ${err}`);
         });
     };
 
     const handleSaveRules = () => {
-        saveTextToLocalFile(rules, 'rules.json', 'application/json')
+        saveTextToLocalFile(rules, 'rules.json', 'application/json');
     }
 
     const handleLoadRules = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,7 +74,7 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
                         throw new Error('Unsupported file format');
                     }
                     setRules(content);
-                    onCleanError();
+                    onSuccess('Rules loaded successfully');
                 } catch (error) {
                     onError(`Invalid file: ${(error as Error).message}`);
                 }
@@ -132,6 +133,7 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
                         highlightActiveLine: true,
                         autocompletion: true
                     }}
+                    data-testid="code-editor"
                 />
             </div>
         </>
