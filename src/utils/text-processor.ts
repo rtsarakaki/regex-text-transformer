@@ -1,6 +1,13 @@
 import { Action, detectAndValidateRulesConfig, RulesConfig } from "@/entities/rules-config";
 
-export function applyRegexRules(text: string, regexRules: string): string {
+export type Mode = 'process' | 'validate' | 'generate_document';
+
+interface ProcessTextResult {
+    processedText: string;
+    brokenRules: string[];
+}
+
+export function applyRegexRules(text: string, regexRules: string, mode: Mode): string {
     try {
         if (!text || !regexRules) {
             return text;
@@ -9,30 +16,49 @@ export function applyRegexRules(text: string, regexRules: string): string {
         const rules: RulesConfig = detectAndValidateRulesConfig(regexRules);
         const variables = rules.variables || {};
 
-        return rules.groups.reduce((result, group) => {
-            const activeActions = group.actions.filter(action => action.active);
-            return activeActions.reduce((innerResult, action) => {
-                const regexWithVariables = _replaceVariables(action.regex, variables);
-                if (action.action === 'removeQuotes') {
-                    const regex = new RegExp(regexWithVariables, 'g');
-                    return _removeQuotes(innerResult, regex);
-                }
-                const regex = new RegExp(regexWithVariables, 'g');
-                return _applyAction(innerResult, regex, action, variables);
-            }, result);
-        }, text);
+        const result = _processTextWithRules(text, rules, variables, mode);
+
+        if (mode === 'validate') {
+            return result.brokenRules.length > 0 ? result.brokenRules.join("\n") : 'No rules to apply.';
+        }
+
+        return result.processedText;
     } catch (error) {
         console.error('Error processing text:', error);
         throw new Error(`${(error as Error).message}`);
     }
 }
 
-export function _applyAction(text: string, regex: RegExp, action: Action, variables: Record<string, string>): string {
+function _processTextWithRules(text: string, rules: RulesConfig, variables: Record<string, string>, mode: Mode): ProcessTextResult {
+    return rules.groups.reduce<ProcessTextResult>((acc, group) => {
+        const activeActions = group.actions.filter(action => action.active);
+        const result = activeActions.reduce<ProcessTextResult>((innerAcc, action) => {
+            const regexWithVariables = _replaceVariables(action.regex, variables);
+            const newText = _applyAction(innerAcc.processedText, regexWithVariables, action, variables);
+            const brokenRules = mode === 'validate' && newText !== innerAcc.processedText
+                ? [...innerAcc.brokenRules, `Rule "${action.description}" needs to be applied.`]
+                : innerAcc.brokenRules;
+            return {
+                processedText: newText,
+                brokenRules
+            };
+        }, acc);
+        return result;
+    }, { processedText: text, brokenRules: [] });
+}
+
+export function _applyAction(text: string, regexWithVariables: string, action: Action, variables: Record<string, string>): string {
+    const regex = new RegExp(regexWithVariables, 'g');
     switch (action.action) {
+        case 'removeQuotes':
+            const resultremoveQuotes = _removeQuotes(text, regex);
+            return resultremoveQuotes
         case 'match':
-            return _extractMatchingText(text, regex, action.value);
+            const resultMatch = _extractMatchingText(text, regex, action.value);
+            return resultMatch
         case 'replace':
-            return _replaceMatchingText(text, regex, action.value, variables);
+            const resultReplace = _replaceMatchingText(text, regex, action.value, variables);
+            return resultReplace
         default:
             return text;
     }

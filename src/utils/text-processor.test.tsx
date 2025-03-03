@@ -1,6 +1,7 @@
 import {
     applyRegexRules
-    , _applyAction, _removeQuotes
+    , _applyAction
+    , _removeQuotes
     , _extractMatchingText
     , _replaceMatchingText
     , _replaceVariables
@@ -9,40 +10,50 @@ import {
 import { Action, RulesConfig } from '@/entities/rules-config';
 
 describe('text-processor', () => {
+
     describe('applyRegexRules', () => {
+        const rules: RulesConfig = {
+            variables: {},
+            groups: [
+                {
+                    title: 'Group 1',
+                    actions: [
+                        {
+                            description: 'Replace world with universe',
+                            action: 'replace',
+                            regex: 'world',
+                            value: 'universe',
+                            active: true,
+                        },
+                    ],
+                },
+            ],
+        };
+
+        const rulesJson = JSON.stringify(rules);
+
         test('returns the original text if no rules are provided', () => {
             const text = 'Hello, world!';
-            const result = applyRegexRules(text, '');
+            const result = applyRegexRules(text, '', 'process');
             expect(result).toBe(text);
         });
 
         test('applies regex rules to the text', () => {
             const text = 'Hello, world!';
-            const rules: RulesConfig = {
-                variables: {},
-                groups: [
-                    {
-                        title: 'Group 1',
-                        actions: [
-                            {
-                                description: 'Replace world with universe',
-                                action: 'replace',
-                                regex: 'world',
-                                value: 'universe',
-                                active: true,
-                            },
-                        ],
-                    },
-                ],
-            };
-            const result = applyRegexRules(text, JSON.stringify(rules));
+            const result = applyRegexRules(text, rulesJson, 'process');
             expect(result).toBe('Hello, universe!');
         });
 
-        test('throws an error for invalid rules format', () => {
+        test('validates the text format correctly', () => {
+            const text = 'Hello, universe!';
+            const result = applyRegexRules(text, rulesJson, 'validate');
+            expect(result).toBe('No rules to apply.');
+        });
+
+        test('returns broken rules if the text format is incorrect', () => {
             const text = 'Hello, world!';
-            const invalidRules = 'invalid rules';
-            expect(() => applyRegexRules(text, invalidRules)).toThrow('Invalid rules format. Must be JSON or YAML.');
+            const result = applyRegexRules(text, rulesJson, 'validate');
+            expect(result).toBe('Rule "Replace world with universe" needs to be applied.');
         });
     });
 
@@ -51,7 +62,7 @@ describe('text-processor', () => {
             {
                 description: 'apply match action',
                 text: '<div>Hello, world!</div>',
-                regex: />([^<]+)</g,
+                regex: '>([^<]+)<',
                 action: { action: 'match', value: ' ' },
                 variables: {},
                 expected: 'Hello, world!',
@@ -59,7 +70,7 @@ describe('text-processor', () => {
             {
                 description: 'apply replace action',
                 text: 'Hello, world!',
-                regex: /world/g,
+                regex: 'world',
                 action: { action: 'replace', value: 'universe' },
                 variables: {},
                 expected: 'Hello, universe!',
@@ -67,7 +78,7 @@ describe('text-processor', () => {
             {
                 description: 'apply default action (no match or replace)',
                 text: 'Hello, world!',
-                regex: /world/g,
+                regex: 'world',
                 action: { action: 'unknown', value: 'universe' },
                 variables: {},
                 expected: 'Hello, world!',

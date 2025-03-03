@@ -9,6 +9,7 @@ import { ErrorMessage } from '@/components/error-message'
 
 export default function Home() {
   const [originalText, setOriginalText] = useState<string>('')
+  const [mode, setMode] = useState<'process' | 'validate' | 'generate_document'>('process')
   const [processedText, setProcessedText] = useState<string>('')
   const [alert, setAlert] = useState<string | null>(null)
   const [alertType, setAlertType] = useState<'error' | 'success'>('error')
@@ -46,6 +47,7 @@ export default function Home() {
           <div className="flex flex-col h-full overflow-auto">
             <RegexRulesEditor
               originalText={originalText}
+              mode={mode}
               onTextProcessed={(text: string) => { setProcessedText(text) }}
               onError={_handleError}
               onSuccess={_handleSuccess}
@@ -54,7 +56,11 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col h-full overflow-auto">
-            <ProcessedTextEditor textLoaded={_handleTextLoaded} processedText={processedText}></ProcessedTextEditor>
+            <ProcessedTextEditor 
+              textLoaded={_handleTextLoaded} 
+              processedText={processedText}
+              onChangeMode={(mode: 'process' | 'validate' | 'generate_document') => setMode(mode)}
+            />
           </div>
         </Split>
       </main>

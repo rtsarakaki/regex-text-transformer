@@ -6,7 +6,7 @@ import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { json } from '@codemirror/lang-json'
 import yaml from 'js-yaml'
 import { Toolbar } from '@/components/toolbar'
-import { applyRegexRules, saveTextToLocalFile } from '@/utils/text-processor'
+import { applyRegexRules, Mode, saveTextToLocalFile } from '@/utils/text-processor'
 import { defaultRules, _escapeSpecialCharactersInRegex, RulesConfig, validateRulesConfigJson, validateRulesConfigYaml } from '@/entities/rules-config'
 
 const CodeMirror = dynamic(
@@ -16,6 +16,7 @@ const CodeMirror = dynamic(
 
 interface RegexRulesEditorProps {
     originalText: string
+    mode: Mode
     onTextProcessed: (text: string) => void
     onError: (text: string) => void
     onSuccess: (text: string) => void
@@ -24,6 +25,7 @@ interface RegexRulesEditorProps {
 
 export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
     originalText,
+    mode,
     onTextProcessed,
     onError,
     onSuccess,
@@ -34,15 +36,15 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
 
     useEffect(() => {
         try {
-            if (rules && originalText) {
-                const resultado = applyRegexRules(originalText, rules)
+            if (rules) {
+                const resultado = applyRegexRules(originalText, rules, mode)
                 onTextProcessed(resultado)
                 onCleanError()
             }
         } catch (error) {
             onError(`Error processing text: ${(error as Error).message}`)
         }
-    }, [rules, originalText, onTextProcessed, onError, onCleanError])
+    }, [rules, originalText, mode, onTextProcessed, onError, onCleanError])
 
     const handleCopy = () => {
         navigator.clipboard.writeText(rules).then(() => {

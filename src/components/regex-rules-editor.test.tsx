@@ -1,10 +1,10 @@
 import React from 'react'
-import { render, fireEvent, screen, waitFor } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { RegexRulesEditor } from './regex-rules-editor'
-import { defaultRules } from '@/entities/rules-config'
 
 describe('RegexRulesEditor', () => {
     const originalText = 'Hello world'
+    const mode = 'process'
     const onTextProcessed = jest.fn()
     const onError = jest.fn()
     const onSuccess = jest.fn()
@@ -18,6 +18,7 @@ describe('RegexRulesEditor', () => {
         const { getByText, getByRole } = render(
             <RegexRulesEditor
                 originalText={originalText}
+                mode={mode}
                 onTextProcessed={onTextProcessed}
                 onError={onError}
                 onSuccess={onSuccess}
