@@ -5,15 +5,29 @@ import Split from 'react-split'
 
 import { ProcessedTextEditor } from '@/components/processed-text-editor'
 import { RegexRulesEditor } from '@/components/regex-rules-editor'
+import { ErrorMessage } from '@/components/error-message'
+import { Mode } from '@/utils/text-processor'
 
 export default function Home() {
   const [originalText, setOriginalText] = useState<string>('')
+  const [mode, setMode] = useState<'process' | 'validate' | 'generate_document'>('process')
   const [processedText, setProcessedText] = useState<string>('')
-  const [error, setError] = useState<string | null>(null)
+  const [alert, setAlert] = useState<string | null>(null)
+  const [alertType, setAlertType] = useState<'error' | 'success'>('error')
 
   const _handleTextLoaded = (text: string) => {
     setOriginalText(text)
     setProcessedText(text)
+  }
+
+  const _handleError = (errorMessage: string) => {
+    setAlert(errorMessage)
+    setAlertType('error')
+  }
+
+  const _handleSuccess = (successMessage: string) => {
+    setAlert(successMessage)
+    setAlertType('success')
   }
 
   return (
@@ -34,22 +48,26 @@ export default function Home() {
           <div className="flex flex-col h-full overflow-auto">
             <RegexRulesEditor
               originalText={originalText}
+              mode={mode}
               onTextProcessed={(text: string) => { setProcessedText(text) }}
-              onError={(errorMessage: string) => { setError(errorMessage) }}
-              onCleanError={() => { setError(null) }}
+              onError={_handleError}
+              onSuccess={_handleSuccess}
+              onCleanAlert={() => { setAlert(null) }}
             />
           </div>
 
           <div className="flex flex-col h-full overflow-auto">
-            <ProcessedTextEditor textLoaded={_handleTextLoaded} processedText={processedText}></ProcessedTextEditor>
+            <ProcessedTextEditor
+              textLoaded={_handleTextLoaded}
+              processedText={processedText}
+              onChangeMode={(mode: Mode) => setMode(mode)}
+            />
           </div>
         </Split>
       </main>
 
-      {error && (
-        <div className="bg-red-600 p-2 text-white">
-          {error}
-        </div>
+      {alert && (
+        <ErrorMessage message={alert} type={alertType} onClose={() => setAlert(null)} />
       )}
 
       <footer className="bg-slate-800 text-center p-2 text-sm text-slate-400">

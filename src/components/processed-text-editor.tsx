@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { Toolbar } from '@/components/toolbar'
-import { loadTextFromLocalFile, saveTextToLocalFile } from '@/utils/text-processor'
+import { loadTextFromLocalFile, Mode, saveTextToLocalFile } from '@/utils/text-processor'
+import { useState } from 'react'
 
 // Importar CodeMirror dinamicamente para evitar erros de SSR
 const CodeMirror = dynamic(
@@ -14,12 +15,16 @@ const CodeMirror = dynamic(
 interface ProcessedTextEditorProps {
     textLoaded: (text: string) => void
     processedText: string
+    onChangeMode: (mode: Mode) => void
 }
 
 export const ProcessedTextEditor: React.FC<ProcessedTextEditorProps> = ({
     textLoaded: originalTextLoaded,
-    processedText
+    processedText,
+    onChangeMode
 }) => {
+
+    const [mode, setMode] = useState<Mode>('process');
 
     const handleCopy = () => {
         navigator.clipboard.writeText(processedText).then(() => {
@@ -38,6 +43,12 @@ export const ProcessedTextEditor: React.FC<ProcessedTextEditorProps> = ({
         saveTextToLocalFile(processedText, 'texto_processado.txt', 'text/plain')
     }
 
+    const _handleModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const newMode = event.target.value as Mode
+        setMode(newMode)
+        onChangeMode(newMode)
+    }
+
     return (
         <>
             <Toolbar
@@ -47,6 +58,14 @@ export const ProcessedTextEditor: React.FC<ProcessedTextEditorProps> = ({
                 title="Texto Processado"
                 acceptTypes="*/*"
             />
+            <div className="flex items-center space-x-2">
+                <label htmlFor="format" className="text-white">Mode:</label>
+                <select id="format" value={mode} onChange={_handleModeChange} className="bg-gray-700 text-white p-1 rounded">
+                    <option value="process">Transform</option>
+                    <option value="validate">Validate</option>
+                    <option value="generate_document">Document</option>
+                </select>
+            </div>
             <div className="flex-1 overflow-auto border border-slate-700 rounded-b">
                 <CodeMirror
                     value={processedText}

@@ -53,103 +53,175 @@ export const defaultRules = `{
     ]
 }`;
 
-function _validateProperty<T>(property: T, condition: (prop: T) => boolean, name: string, errorMessage: string): asserts property is T {
+export function _validateProperty(property: unknown, condition: (prop: unknown) => boolean, name: string, errorMessage: string): void {
+    if (property === undefined || property === null) {
+        throw new Error(`The property ${name} cannot be null or undefined.`);
+    }
+    if (typeof condition !== 'function') {
+        throw new Error('The condition must be a function.');
+    }
+    if (typeof name !== 'string') {
+        throw new Error('The property name must be a string.');
+    }
+    if (typeof errorMessage !== 'string') {
+        throw new Error('The error message must be a string.');
+    }
     if (!condition(property)) {
         throw new Error(errorMessage.replace('{name}', name));
     }
 }
 
-function _validateAllowedProperties(object: Action | RuleGroup, allowedKeys: string[], objectName: string) {
+export function _validateAllowedProperties(object: Action | RuleGroup, allowedKeys: string[], objectName: string): void {
+    if (typeof object !== 'object' || object === null) {
+        throw new Error('The object must be a non-null object.');
+    }
+    if (!Array.isArray(allowedKeys)) {
+        throw new Error('The allowedKeys must be an array.');
+    }
+    if (typeof objectName !== 'string') {
+        throw new Error('The objectName must be a string.');
+    }
+
     const objectKeys = Object.keys(object);
     objectKeys.forEach(key => {
         if (!allowedKeys.includes(key)) {
-            throw new Error(`${objectName} contém uma propriedade desconhecida: "${key}".`);
+            throw new Error(`${objectName} contains an unknown property: "${key}".`);
         }
     });
 }
 
-function _buildErrorMessage(propertyName: string, index: number | null, context: string, contextName: string, type: string) {
-    const message = `A propriedade ${propertyName} ${index ? 'na posição ' + index : ''} do ${context} ${contextName} deve existir e ser ${type}.`;
+export function _buildErrorMessage(propertyName: string, index: number | null, context: string, contextName: string, type: string): string {
+    if (typeof propertyName !== 'string') {
+        throw new Error('The propertyName must be a string.');
+    }
+    if (index !== null && typeof index !== 'number') {
+        throw new Error('The index must be a number or null.');
+    }
+    if (typeof context !== 'string') {
+        throw new Error('The context must be a string.');
+    }
+    if (typeof contextName !== 'string') {
+        throw new Error('The contextName must be a string.');
+    }
+    if (typeof type !== 'string') {
+        throw new Error('The type must be a string.');
+    }
+
+    const message = `The property ${propertyName} ${index !== null ? 'at position ' + index + ' ' : ''}in the ${context} ${contextName} must exist and be ${type}.`;
     return message;
 }
 
-function _validateAction(action: Action, actionIndex: number, groupTitle: string) {
+export function _validateAction(action: Action, actionIndex: number, groupTitle: string): void {
+    if (typeof action !== 'object' || action === null) {
+        throw new Error('The action must be a non-null object.');
+    }
+    if (typeof actionIndex !== 'number') {
+        throw new Error('The actionIndex must be a number.');
+    }
+    if (typeof groupTitle !== 'string') {
+        throw new Error('The groupTitle must be a string.');
+    }
+
     _validateProperty(
         action.description,
         prop => typeof prop === 'string',
         `group.actions[${actionIndex}].description`,
-        _buildErrorMessage('action.description', actionIndex, 'grupo', groupTitle, 'string')
+        _buildErrorMessage('action.description', actionIndex, 'group', groupTitle, 'string')
     );
 
     _validateProperty(
         action.action,
         prop => prop === 'match' || prop === 'replace' || prop === 'removeQuotes',
         `group.actions[${actionIndex}].action`,
-        _buildErrorMessage('action.action', actionIndex, 'grupo', groupTitle, '"match", "replace" ou "removeQuotes"')
+        _buildErrorMessage('action.action', actionIndex, 'group', groupTitle, '"match", "replace" or "removeQuotes"')
     );
 
     _validateProperty(
         action.regex,
         prop => typeof prop === 'string',
         `group.actions[${actionIndex}].regex`,
-        _buildErrorMessage('action.regex', actionIndex, 'grupo', groupTitle, 'string')
+        _buildErrorMessage('action.regex', actionIndex, 'group', groupTitle, 'string')
     );
 
     _validateProperty(
         action.value,
         prop => typeof prop === 'string',
         `group.actions[${actionIndex}].value`,
-        _buildErrorMessage('action.value', actionIndex, 'grupo', groupTitle, 'string')
+        _buildErrorMessage('action.value', actionIndex, 'group', groupTitle, 'string')
     );
 
     _validateProperty(
         action.active,
         prop => typeof prop === 'boolean',
         `group.actions[${actionIndex}].active`,
-        _buildErrorMessage('action.active', actionIndex, 'grupo', groupTitle, 'boolean')
+        _buildErrorMessage('action.active', actionIndex, 'group', groupTitle, 'boolean')
     );
 
-    _validateAllowedProperties(action, ['description', 'action', 'regex', 'value', 'active'], `A ação na posição ${actionIndex} do grupo "${groupTitle}"`);
+    _validateAllowedProperties(action, ['description', 'action', 'regex', 'value', 'active'], `The action at position ${actionIndex} in the group "${groupTitle}"`);
 }
 
-function _validateGroup(group: RuleGroup, groupIndex: number) {
+export function _validateGroup(group: RuleGroup, groupIndex: number): void {
+    if (typeof group !== 'object' || group === null) {
+        throw new Error('The group must be a non-null object.');
+    }
+    if (typeof groupIndex !== 'number') {
+        throw new Error('The groupIndex must be a number.');
+    }
+
     _validateProperty(
         group.title,
         prop => typeof prop === 'string',
         `group[${groupIndex}].title`,
-        _buildErrorMessage('group.title', groupIndex, 'grupo', '', 'string')
+        _buildErrorMessage('group.title', groupIndex, 'group', '', 'string')
     );
 
     _validateProperty(
         group.actions,
         Array.isArray,
         `group[${groupIndex}].actions`,
-        _buildErrorMessage('group.actions', groupIndex, 'grupo', group.title, 'array')
+        _buildErrorMessage('group.actions', groupIndex, 'group', group.title, 'array')
     );
 
     group.actions.forEach((action: Action, actionIndex: number) => {
         _validateAction(action, actionIndex, group.title);
     });
 
-    _validateAllowedProperties(group, ['title', 'actions'], `O grupo "${group.title}"`);
+    _validateAllowedProperties(group, ['title', 'actions'], `The group "${group.title}"`);
 }
 
-export function escapeSpecialCharactersInRegex(rules: string): string {
-    return rules.replace(/"regex":\s*"([^"]*)"/g, (match, p1) => {
-        const escapedRegex = p1.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-        return `"regex": "${escapedRegex}"`;
+export function _escapeSpecialCharactersInRegex(rules: string): string {
+    if (typeof rules !== 'string') {
+        throw new Error('The rules parameter must be a string.');
+    }
+
+    const escapedRules = rules.replace(/"regex":\s*"([^"]*)"/g, (match, p1) => {
+        const escapedBackslashes = p1.replace(/\\/g, '\\\\');
+        const escapedQuotes = escapedBackslashes.replace(/"/g, '\\"');
+        const regex = `"regex": "${escapedQuotes}"`
+        return regex;
     });
+
+    return escapedRules;
 }
 
 export function validateRulesConfigJson(rules: string): RulesConfig {
-    const escapedRules = escapeSpecialCharactersInRegex(rules);
-    const rulesConfig = JSON.parse(escapedRules);
+    if (typeof rules !== 'string') {
+        throw new Error('The rules parameter must be a string.');
+    }
+
+    let rulesConfig: RulesConfig;
+    try {
+        const escapedRules = _escapeSpecialCharactersInRegex(rules);
+        rulesConfig = JSON.parse(escapedRules);
+    } catch {
+        throw new Error('Invalid JSON format.');
+    }
 
     _validateProperty(
         rulesConfig,
         prop => typeof prop === 'object' && prop !== null,
         'rulesConfig',
-        'O JSON de regras deve ser um objeto.'
+        'The rules JSON must be an object.'
     );
 
     if (rulesConfig.variables) {
@@ -157,7 +229,7 @@ export function validateRulesConfigJson(rules: string): RulesConfig {
             rulesConfig.variables,
             prop => typeof prop === 'object' && prop !== null,
             'variables',
-            'A propriedade "variables" deve ser um objeto.'
+            'The "variables" property must be an object.'
         );
     }
 
@@ -176,13 +248,22 @@ export function validateRulesConfigJson(rules: string): RulesConfig {
 }
 
 export function validateRulesConfigYaml(rules: string): RulesConfig {
-    const rulesConfig = yaml.load(rules) as RulesConfig;
+    if (typeof rules !== 'string') {
+        throw new Error('The rules parameter must be a string.');
+    }
+
+    let rulesConfig: RulesConfig;
+    try {
+        rulesConfig = yaml.load(rules) as RulesConfig;
+    } catch {
+        throw new Error('Invalid YAML format.');
+    }
 
     _validateProperty(
         rulesConfig,
         prop => typeof prop === 'object' && prop !== null,
         'rulesConfig',
-        'O YAML de regras deve ser um objeto.'
+        'The rules YAML must be an object.'
     );
 
     if (rulesConfig.variables) {
@@ -190,7 +271,7 @@ export function validateRulesConfigYaml(rules: string): RulesConfig {
             rulesConfig.variables,
             prop => typeof prop === 'object' && prop !== null,
             'variables',
-            'A propriedade "variables" deve ser um objeto.'
+            'The "variables" property must be an object.'
         );
     }
 
@@ -206,4 +287,16 @@ export function validateRulesConfigYaml(rules: string): RulesConfig {
     });
 
     return rulesConfig as RulesConfig;
+}
+
+export function detectAndValidateRulesConfig(rules: string): RulesConfig {
+    try {
+        return validateRulesConfigJson(rules);
+    } catch {
+        try {
+            return validateRulesConfigYaml(rules);
+        } catch {
+            throw new Error('Invalid rules format. Must be JSON or YAML.');
+        }
+    }
 }

@@ -6,8 +6,8 @@ import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { json } from '@codemirror/lang-json'
 import yaml from 'js-yaml'
 import { Toolbar } from '@/components/toolbar'
-import { applyRegexRules, saveTextToLocalFile } from '@/utils/text-processor'
-import { defaultRules, escapeSpecialCharactersInRegex, RulesConfig, validateRulesConfigJson, validateRulesConfigYaml } from '@/entities/rules-config'
+import { applyRegexRules, Mode, saveTextToLocalFile } from '@/utils/text-processor'
+import { defaultRules, _escapeSpecialCharactersInRegex, RulesConfig, validateRulesConfigJson, validateRulesConfigYaml } from '@/entities/rules-config'
 
 const CodeMirror = dynamic(
     () => import('@uiw/react-codemirror').then((mod) => mod.default),
@@ -16,43 +16,46 @@ const CodeMirror = dynamic(
 
 interface RegexRulesEditorProps {
     originalText: string
+    mode: Mode
     onTextProcessed: (text: string) => void
     onError: (text: string) => void
-    onCleanError: () => void
+    onSuccess: (text: string) => void
+    onCleanAlert: () => void
 }
 
 export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
     originalText,
+    mode,
     onTextProcessed,
     onError,
-    onCleanError
+    onSuccess,
+    onCleanAlert: onCleanError
 }) => {
     const [rules, setRules] = useState<string>(defaultRules)
     const [format, setFormat] = useState<'json' | 'yaml'>('json');
 
     useEffect(() => {
         try {
-            if (rules && originalText) {
-                const resultado = applyRegexRules(originalText, rules)
+            if (rules) {
+                const resultado = applyRegexRules(originalText, rules, mode)
                 onTextProcessed(resultado)
                 onCleanError()
             }
         } catch (error) {
-            onError(`Erro ao processar texto: ${(error as Error).message}`)
-            console.error(error)
+            onError(`Error processing text: ${(error as Error).message}`)
         }
-    }, [rules, originalText, onTextProcessed, onError, onCleanError])
+    }, [rules, originalText, mode, onTextProcessed, onError, onCleanError])
 
     const handleCopy = () => {
         navigator.clipboard.writeText(rules).then(() => {
-            console.log('Texto copiado para a área de transferência');
+            onSuccess('Rules copied to clipboard');
         }).catch(err => {
-            console.error('Erro ao copiar texto: ', err);
+            onError(`Error copying text to clipboard: ${err}`);
         });
     };
 
     const handleSaveRules = () => {
-        saveTextToLocalFile(rules, 'regras.json', 'application/json')
+        saveTextToLocalFile(rules, 'rules.json', 'application/json');
     }
 
     const handleLoadRules = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,12 +73,12 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
                         validateRulesConfigYaml(content);
                         setFormat('yaml');
                     } else {
-                        throw new Error('Formato de arquivo não suportado');
+                        throw new Error('Unsupported file format');
                     }
                     setRules(content);
-                    onCleanError();
+                    onSuccess('Rules loaded successfully');
                 } catch (error) {
-                    onError(`Arquivo inválido: ${(error as Error).message}`);
+                    onError(`Invalid file: ${(error as Error).message}`);
                 }
             }
             reader.readAsText(file)
@@ -84,24 +87,10 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
 
     const parseRules = (text: string, format: 'json' | 'yaml'): RulesConfig => {
         if (format === 'json') {
-            const escapedRules = escapeSpecialCharactersInRegex(text);
+            const escapedRules = _escapeSpecialCharactersInRegex(text);
             return JSON.parse(escapedRules) as RulesConfig;
         } else {
             return yaml.load(text) as RulesConfig;
-        }
-    };
-
-    const validateRules = (parsedRules: RulesConfig) => {
-        return validateRulesConfigJson(JSON.stringify(parsedRules));
-    };
-
-    const handleValidate = () => {
-        try {
-            const parsedRules = parseRules(rules, format);
-            const rulesConfig = validateRules(parsedRules);
-            console.log('Regras validadas:', rulesConfig);
-        } catch (error) {
-            console.error('Erro ao validar regras:', error);
         }
     };
 
@@ -113,7 +102,7 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
             setRules(convertedRules);
             setFormat(newFormat);
         } catch (error) {
-            onError(`Erro ao converter regras: ${(error as Error).message}`);
+            onError(`Error converting rules: ${(error as Error).message}`);
         }
     };
 
@@ -123,18 +112,15 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
                 onSave={handleSaveRules}
                 onLoad={handleLoadRules}
                 onCopy={handleCopy}
-                title="Regras JSON"
+                title="JSON Rules"
                 acceptTypes=".json,.yaml,.yml"
             />
             <div className="flex items-center space-x-2">
-                <label htmlFor="format" className="text-white">Formato:</label>
+                <label htmlFor="format" className="text-white">Format:</label>
                 <select id="format" value={format} onChange={handleFormatChange} className="bg-gray-700 text-white p-1 rounded">
                     <option value="json">JSON</option>
                     <option value="yaml">YAML</option>
                 </select>
-                <button onClick={handleValidate} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors duration-200">
-                    Validar
-                </button>
             </div>
             <div className="flex-1 overflow-auto border border-slate-700 rounded-b">
                 <CodeMirror
@@ -149,6 +135,7 @@ export const RegexRulesEditor: React.FC<RegexRulesEditorProps> = ({
                         highlightActiveLine: true,
                         autocompletion: true
                     }}
+                    data-testid="code-editor"
                 />
             </div>
         </>
