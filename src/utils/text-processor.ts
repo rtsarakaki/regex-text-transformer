@@ -1,4 +1,4 @@
-import { Action, RulesConfig, validateRulesConfigJson, validateRulesConfigYaml } from "@/entities/rules-config";
+import { Action, detectAndValidateRulesConfig, RulesConfig } from "@/entities/rules-config";
 
 export function applyRegexRules(text: string, regexRules: string): string {
     try {
@@ -22,27 +22,15 @@ export function applyRegexRules(text: string, regexRules: string): string {
             }, result);
         }, text);
     } catch (error) {
-        console.error('Erro ao processar texto:', error);
-        throw new Error(`Erro ao processar texto: ${(error as Error).message}`);
+        console.error('Error processing text:', error);
+        throw new Error(`${(error as Error).message}`);
     }
 }
 
-function detectAndValidateRulesConfig(rules: string): RulesConfig {
-    try {
-        return validateRulesConfigJson(rules);
-    } catch {
-        try {
-            return validateRulesConfigYaml(rules);
-        } catch {
-            throw new Error('Formato de regras inválido. Deve ser JSON ou YAML.');
-        }
-    }
-}
-
-function _applyAction(text: string, regex: RegExp, action: Action, variables: Record<string, string>): string {
+export function _applyAction(text: string, regex: RegExp, action: Action, variables: Record<string, string>): string {
     switch (action.action) {
         case 'match':
-            return _extractMatchingText(text, regex, action.value, variables);
+            return _extractMatchingText(text, regex, action.value);
         case 'replace':
             return _replaceMatchingText(text, regex, action.value, variables);
         default:
@@ -50,21 +38,28 @@ function _applyAction(text: string, regex: RegExp, action: Action, variables: Re
     }
 }
 
-function _removeQuotes(text: string, regex: RegExp): string {
+export function _removeQuotes(text: string, regex: RegExp): string {
     return text.replace(regex, (match) => {
         return match.replace(/"/g, '');
     });
 }
 
-function _extractMatchingText(text: string, regex: RegExp, value: string, variables: Record<string, string>): string {
-    const matches = text.match(regex);
-    const regexWithVariables = _replaceVariables(value, variables);
-    const regexRemovedEscapes = _processEscapes(regexWithVariables);
-    const result = matches ? matches.join(regexRemovedEscapes) : '';
+export function _extractMatchingText(text: string, regex: RegExp, value: string): string {
+    const matches = [...text.matchAll(regex)];
+    if (matches.length === 0) {
+        return text;
+    }
+
+    const extractedText = matches.map(match => match[1]).join(value);
+    const result = _processEscapes(extractedText);
     return result;
 }
 
-function _replaceMatchingText(text: string, regex: RegExp, value: string, variables: Record<string, string>): string {
+export function _replaceMatchingText(text: string, regex: RegExp, value: string, variables: Record<string, string>): string {
+    if (!text) {
+        return "";
+    }
+
     const replacedValue = _replaceVariables(value, variables);
     return text.replace(regex, (match, ...groups) => {
         let result = _processEscapes(replacedValue);
@@ -75,14 +70,18 @@ function _replaceMatchingText(text: string, regex: RegExp, value: string, variab
     });
 }
 
-function _replaceVariables(value: string, variables: Record<string, string>): string {
+export function _replaceVariables(value: string, variables: Record<string, string> | null | undefined): string {
+    if (!variables || typeof variables !== 'object') {
+        throw new Error('The variables object is invalid.');
+    }
+
     return Object.keys(variables).reduce((result, key) => {
         const variableRegex = new RegExp(`<VAR=${key}>`, 'g');
         return result.replace(variableRegex, variables[key]);
     }, value);
 }
 
-function _processEscapes(value: string): string {
+export function _processEscapes(value: string): string {
     return value
         .replace(/\\n/g, '\n')
         .replace(/\\r/g, '\r')
@@ -111,11 +110,11 @@ export const loadTextFromLocalFile = (event: React.ChangeEvent<HTMLInputElement>
                 resolve(content);
             };
             reader.onerror = () => {
-                reject(new Error('Erro ao ler o arquivo'));
+                reject(new Error('Error reading file'));
             };
             reader.readAsText(file);
         } else {
-            reject(new Error('Nenhum arquivo selecionado'));
+            reject(new Error('No file selected'));
         }
     });
 }

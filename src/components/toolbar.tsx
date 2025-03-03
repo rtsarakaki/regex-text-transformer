@@ -53,6 +53,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onSave, onLoad, onCopy, title,
                     onChange={onLoad}
                     className="hidden"
                     accept={acceptTypes}
+                    data-testid="file-input"
                 />
             </div>
         </div>
