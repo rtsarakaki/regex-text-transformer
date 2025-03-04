@@ -1,8 +1,10 @@
 import {
     applyRegexRules
     , _applyAction
-    , _removeQuotes
+    , _buildActionDescriptionToMarkdownDocument
     , _extractMatchingText
+    , _getActionSummary
+    , _removeQuotes
     , _replaceMatchingText
     , _replaceVariables
     , _processEscapes
@@ -64,7 +66,7 @@ describe('text-processor', () => {
             expect(result).toContain('- **Action**: replace');
             expect(result).toContain('- **Regex**: `world`');
             expect(result).toContain('- **Value**: universe');
-            expect(result).toContain('- **Active**: true');
+            expect(result).not.toContain('### Inactive action');
         });
     });
 
@@ -379,6 +381,94 @@ describe('text-processor', () => {
                 const result = _processEscapes(input);
                 expect(result).toBe(expected);
             });
+        });
+    });
+
+    describe('_getActionSummary', () => {
+        test('returns the markdown resume for an action', () => {
+            const action: Action = {
+                description: 'Replace world with universe',
+                action: 'replace',
+                regex: 'world',
+                value: 'universe',
+                active: true,
+            };
+
+            expect(() => _getActionSummary(action, null)).toThrow('The variables object is invalid.');
+        });
+
+        test('returns the markdown resume for an action with variables', () => {
+            const action: Action = {
+                description: 'Replace world with <VAR=planet>',
+                action: 'replace',
+                regex: 'world',
+                value: '<VAR=planet>',
+                active: true,
+            };
+
+            const variables = { planet: 'universe' };
+
+            const result = _getActionSummary(action, variables);
+            expect(result).toBe(
+                `- **Action**: replace\n- **Regex**: \`world\`\n- **Value**: universe\n\n`
+            );
+        });
+    });
+
+    describe('_buildActionDescriptionToMarkdownDocument', () => {
+        test('returns the markdown document for an action', () => {
+            const action: Action = {
+                description: 'Find parts in the text that meet the regex <regex/> and <action/> with <value/>',
+                action: 'replace',
+                regex: 'world',
+                value: 'universe',
+                active: true,
+            };
+
+            const result = _buildActionDescriptionToMarkdownDocument(action, {});
+            expect(result).toBe('Find parts in the text that meet the regex **world** and **replace** with **universe**');
+        });
+
+        test('returns the markdown document for an action with variables', () => {
+            const action: Action = {
+                description: 'Find parts in the text that meet the regex <regex/> and <action/> with <value/>',
+                action: 'replace',
+                regex: 'world',
+                value: '<VAR=planet>',
+                active: true,
+            };
+
+            const variables = { planet: 'universe' };
+
+            const result = _buildActionDescriptionToMarkdownDocument(action, variables);
+            expect(result).toBe('Find parts in the text that meet the regex **world** and **replace** with **universe**');
+        });
+
+        test('throws an error if variables is null', () => {
+            const action: Action = {
+                description: 'Find parts in the text that meet the regex <regex/> and <action/> with <value/>',
+                action: 'replace',
+                regex: 'world',
+                value: '<VAR=planet>',
+                active: true,
+            };
+
+            expect(() => _buildActionDescriptionToMarkdownDocument(action, null)).toThrow('The variables object is invalid.');
+        });
+
+        test('returns the markdown document for an action with summary', () => {
+            const action: Action = {
+                description: 'Find parts in the text that meet the regex <regex/> and <action/> with <value/> and <summary/>',
+                action: 'replace',
+                regex: 'world',
+                value: 'universe',
+                active: true,
+            };
+
+            const result = _buildActionDescriptionToMarkdownDocument(action, {});
+            expect(result).toBe(
+                'Find parts in the text that meet the regex **world** and **replace** with **universe** and \n- **Action**: replace\n- **Regex**: `world`\n- **Value**: universe\n\n'
+            );
         });
     });
 });

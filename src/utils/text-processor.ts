@@ -73,20 +73,40 @@ export function _applyAction(text: string, regexWithVariables: string, action: A
     }
 }
 
-function _generateMarkdownDocument(rules: RulesConfig): string {
+export function _generateMarkdownDocument(rules: RulesConfig): string {
     let markdown = "# Generated Document\n\n";
 
     rules.groups.forEach(group => {
-        markdown += `## ${group.title}\n\n`;
-        group.actions.forEach(action => {
-            markdown += `### ${action.description}\n`;
-            markdown += `- **Action**: ${action.action}\n`;
-            markdown += `- **Regex**: \`${action.regex}\`\n`;
-            markdown += `- **Value**: ${action.value}\n`;
-            markdown += `- **Active**: ${action.active}\n\n`;
-        });
+        const activeActions = group.actions.filter(action => action.active);
+        if (activeActions.length > 0) {
+            markdown += `## ${group.title}\n\n`;
+            activeActions.forEach(action => {
+                const description = _buildActionDescriptionToMarkdownDocument(action, rules.variables);
+                markdown += `### ${description}\n`;
+            });
+        }
     });
 
+    return markdown;
+}
+
+export function _buildActionDescriptionToMarkdownDocument(action: Action, variables: Record<string, string> | null | undefined): string {
+    const value = _replaceVariables(action.value, variables);
+    const summary = _getActionSummary(action, variables);
+    const result = action.description
+        .replace('<regex/>', `**${action.regex}**`)
+        .replace('<action/>', `**${action.action}**`)
+        .replace('<value/>', `**${value}**`)
+        .replace('<summary/>', `\n${summary}`);
+    return result;
+}
+
+export function _getActionSummary(action: Action, variables: Record<string, string> | null | undefined): string {
+    const value = _replaceVariables(action.value, variables);
+    let markdown = ``;
+    markdown += `- **Action**: ${action.action}\n`;
+    markdown += `- **Regex**: \`${action.regex}\`\n`;
+    markdown += `- **Value**: ${value}\n`;
     return markdown;
 }
 
