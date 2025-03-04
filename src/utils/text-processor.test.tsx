@@ -21,7 +21,7 @@ describe('text-processor', () => {
                     title: 'Group 1',
                     actions: [
                         {
-                            description: 'Replace world with universe',
+                            description: 'Replace world with universe<summary/>',
                             action: 'replace',
                             regex: 'world',
                             value: 'universe',
@@ -55,7 +55,7 @@ describe('text-processor', () => {
         test('returns broken rules if the text format is incorrect', () => {
             const text = 'Hello, world!';
             const result = applyRegexRules(text, rulesJson, 'validate');
-            expect(result).toBe('Rule "Replace world with universe" needs to be applied.');
+            expect(result).toBe('Rule "Replace world with universe\n- **Action**: replace\n- **Regex**: `world`\n- **Value**: universe\n" needs to be applied.');
         });
 
         test('generates a markdown document', () => {
@@ -410,7 +410,7 @@ describe('text-processor', () => {
 
             const result = _getActionSummary(action, variables);
             expect(result).toBe(
-                `- **Action**: replace\n- **Regex**: \`world\`\n- **Value**: universe\n\n`
+                `- **Action**: replace\n- **Regex**: \`world\`\n- **Value**: universe\n`
             );
         });
     });
@@ -467,7 +467,7 @@ describe('text-processor', () => {
 
             const result = _buildActionDescriptionToMarkdownDocument(action, {});
             expect(result).toBe(
-                'Find parts in the text that meet the regex **world** and **replace** with **universe** and \n- **Action**: replace\n- **Regex**: `world`\n- **Value**: universe\n\n'
+                'Find parts in the text that meet the regex **world** and **replace** with **universe** and \n- **Action**: replace\n- **Regex**: `world`\n- **Value**: universe\n'
             );
         });
     });
