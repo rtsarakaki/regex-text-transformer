@@ -44,8 +44,9 @@ function _processTextWithRules(text: string, rules: RulesConfig, variables: Reco
         const result = activeActions.reduce<ProcessTextResult>((innerAcc, action) => {
             const regexWithVariables = _replaceVariables(action.regex, variables);
             const newText = _applyAction(innerAcc.processedText, regexWithVariables, action, variables);
+            const description = _buildActionDescriptionToMarkdownDocument(action, variables);
             const brokenRules = mode === 'validate' && newText !== innerAcc.processedText
-                ? [...innerAcc.brokenRules, `Rule "${action.description}" needs to be applied.`]
+                ? [...innerAcc.brokenRules, `Rule "${description}" needs to be applied.`]
                 : innerAcc.brokenRules;
             return {
                 processedText: newText,
