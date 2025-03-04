@@ -29,7 +29,7 @@ describe('Toolbar', () => {
 
     test('renders the Save, Load, and Copy buttons', () => {
         const saveButton = screen.getByText(/Download/i);
-        const loadButton = screen.getByText(/Load/i);
+        const loadButton = screen.getByText(/Upload/i);
         const copyButton = screen.getByText(/Copy/i);
 
         expect(saveButton).toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('Toolbar', () => {
     });
 
     test('calls the onLoad function when a file is selected', () => {
-        const loadButton = screen.getByText(/Load/i);
+        const loadButton = screen.getByText(/Upload/i);
         fireEvent.click(loadButton);
 
         const fileInput = screen.getByTestId('file-input');
