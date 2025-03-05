@@ -61,7 +61,7 @@ export function _applyAction(text: string, regexWithVariables: string, action: A
     const regex = new RegExp(regexWithVariables, 'g');
     switch (action.action) {
         case 'removeQuotes':
-            const resultremoveQuotes = _removeQuotes(text, regex);
+            const resultremoveQuotes = _removeQuotes(text, regex, action.value);
             return resultremoveQuotes
         case 'match':
             const resultMatch = _extractMatchingText(text, regex, action.value);
@@ -75,12 +75,12 @@ export function _applyAction(text: string, regexWithVariables: string, action: A
 }
 
 export function _generateMarkdownDocument(rules: RulesConfig): string {
-    let markdown = "# Generated Document\n\n";
+    let markdown = "# Generated Document\n";
 
     rules.groups.forEach(group => {
         const activeActions = group.actions.filter(action => action.active);
         if (activeActions.length > 0) {
-            markdown += `## ${group.title}\n\n`;
+            markdown += `\n\n## ${group.title}\n`;
             activeActions.forEach(action => {
                 const description = _buildActionDescriptionToMarkdownDocument(action, rules.variables);
                 markdown += `### ${description}\n`;
@@ -111,9 +111,9 @@ export function _getActionSummary(action: Action, variables: Record<string, stri
     return markdown;
 }
 
-export function _removeQuotes(text: string, regex: RegExp): string {
+export function _removeQuotes(text: string, regex: RegExp, value: string): string {
     return text.replace(regex, (match) => {
-        return match.replace(/"/g, '');
+        return match.replace(/"/g, value);
     });
 }
 

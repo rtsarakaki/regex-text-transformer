@@ -148,7 +148,7 @@ describe('text-processor', () => {
 
         testCases.forEach(({ description, text, regex, expected }) => {
             test(description, () => {
-                const result = _removeQuotes(text, regex);
+                const result = _removeQuotes(text, regex, '');
                 expect(result).toBe(expected);
             });
         });
