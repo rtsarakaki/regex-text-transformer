@@ -18,7 +18,10 @@
     "next": "15.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-split": "^2.0.14"
+    "react-markdown": "^10.0.1",
+    "react-split": "^2.0.14",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

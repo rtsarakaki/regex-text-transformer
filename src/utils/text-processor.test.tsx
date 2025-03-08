@@ -55,17 +55,17 @@ describe('text-processor', () => {
         test('returns broken rules if the text format is incorrect', () => {
             const text = 'Hello, world!';
             const result = applyRegexRules(text, rulesJson, 'validate');
-            expect(result).toBe('Rule "Replace world with universe\n- **Action**: replace\n- **Regex**: `world`\n- **Value**: universe\n" needs to be applied.');
+            expect(result).toBe('Rule \"Replace world with universe\n1. **Action**: replace\n1. **Regex**: `world`\n1. **Value**: universe\n\" needs to be applied.');
         });
 
         test('generates a markdown document', () => {
             const result = applyRegexRules('', rulesJson, 'generate_document');
             expect(result).toContain('# Generated Document');
             expect(result).toContain('## Group 1');
-            expect(result).toContain('### Replace world with universe');
-            expect(result).toContain('- **Action**: replace');
-            expect(result).toContain('- **Regex**: `world`');
-            expect(result).toContain('- **Value**: universe');
+            expect(result).toContain('- Replace world with universe');
+            expect(result).toContain('1. **Action**: replace');
+            expect(result).toContain('1. **Regex**: `world`');
+            expect(result).toContain('1. **Value**: universe');
             expect(result).not.toContain('### Inactive action');
         });
     });
@@ -410,7 +410,7 @@ describe('text-processor', () => {
 
             const result = _getActionSummary(action, variables);
             expect(result).toBe(
-                `- **Action**: replace\n- **Regex**: \`world\`\n- **Value**: universe\n`
+                "1. **Action**: replace\n1. **Regex**: `world`\n1. **Value**: universe\n"
             );
         });
     });
@@ -467,7 +467,7 @@ describe('text-processor', () => {
 
             const result = _buildActionDescriptionToMarkdownDocument(action, {});
             expect(result).toBe(
-                'Find parts in the text that meet the regex **world** and **replace** with **universe** and \n- **Action**: replace\n- **Regex**: `world`\n- **Value**: universe\n'
+                'Find parts in the text that meet the regex **world** and **replace** with **universe** and \n1. **Action**: replace\n1. **Regex**: `world`\n1. **Value**: universe\n'
             );
         });
     });

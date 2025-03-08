@@ -83,7 +83,7 @@ export function _generateMarkdownDocument(rules: RulesConfig): string {
             markdown += `\n\n## ${group.title}\n`;
             activeActions.forEach(action => {
                 const description = _buildActionDescriptionToMarkdownDocument(action, rules.variables);
-                markdown += `### ${description}\n`;
+                markdown += `- ${description}\n`;
             });
         }
     });
@@ -105,9 +105,9 @@ export function _buildActionDescriptionToMarkdownDocument(action: Action, variab
 export function _getActionSummary(action: Action, variables: Record<string, string> | null | undefined): string {
     const value = _replaceVariables(action.value, variables);
     let markdown = ``;
-    markdown += `- **Action**: ${action.action}\n`;
-    markdown += `- **Regex**: \`${action.regex}\`\n`;
-    markdown += `- **Value**: ${value}\n`;
+    markdown += `1. **Action**: ${action.action}\n`;
+    markdown += `1. **Regex**: \`${action.regex}\`\n`;
+    markdown += `1. **Value**: ${value}\n`;
     return markdown;
 }
 
