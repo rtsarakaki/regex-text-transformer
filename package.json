@@ -15,7 +15,7 @@
     "@uiw/codemirror-theme-vscode": "^4.23.8",
     "@uiw/react-codemirror": "^4.23.8",
     "js-yaml": "^4.1.0",
-    "next": "15.2.0",
+    "next": "15.2.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-split": "^2.0.14"
