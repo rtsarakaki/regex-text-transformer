@@ -11,7 +11,7 @@ metadata:
   annotations:
     github.com/project-slug: rtsarakaki/regex-text-transformer
 spec:
-  type: other
+  type: website
   lifecycle: production
   owner: time-arakaki
   system: text-tools 
