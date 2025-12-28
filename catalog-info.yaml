@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: regex-text-transformer
+  annotations:
+    github.com/project-slug: rtsarakaki/regex-text-transformer
+spec:
+  type: other
+  lifecycle: unknown
+  owner: time-arakaki
