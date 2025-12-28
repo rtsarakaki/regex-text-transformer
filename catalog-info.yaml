@@ -6,5 +6,5 @@ metadata:
     github.com/project-slug: rtsarakaki/regex-text-transformer
 spec:
   type: other
-  lifecycle: unknown
+  lifecycle: production
   owner: time-arakaki
