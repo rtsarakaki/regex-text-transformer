@@ -13,5 +13,5 @@ metadata:
 spec:
   type: website
   lifecycle: production
-  owner: time-arakaki
+  owner: developers
   system: text-tools 
