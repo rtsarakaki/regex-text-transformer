@@ -2,16 +2,12 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: regex-text-transformer
-  description: |
     Transforma conteúdos de texto utilizando regex para fazer alterações em lote em tempo real
   tags:
     - text
     - tools
     - web
   annotations:
+    custom.backstage.io/component-id: "833a666ce1b8641a450aee1becc870f2be19f1573836f937520c756ca3c48c80"
     github.com/project-slug: rtsarakaki/regex-text-transformer
 spec:
-  type: website
-  lifecycle: production
-  owner: developers
-  system: text-tools 
