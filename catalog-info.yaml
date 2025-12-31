@@ -6,3 +6,6 @@ metadata:
     custom.backstage.io/component-id: "833a666ce1b8641a450aee1becc870f2be19f1573836f937520c756ca3c48c80"
     github.com/project-slug: rtsarakaki/regex-text-transformer
 spec:
+  type: website
+  lifecycle: experimental
+  owner: group:default/unknown
