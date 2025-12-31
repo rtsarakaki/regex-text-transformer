@@ -9,4 +9,4 @@ spec:
   system: text-tools
   type: website
   lifecycle: experimental
-  owner: group:default/unknown
+  owner: group:default/developers
